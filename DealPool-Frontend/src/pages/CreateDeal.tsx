@@ -1,0 +1,467 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../redux/store";
+import { createDeal } from "../redux/slices/dealsSlice";
+import { requestUserLocation } from "../redux/slices/locationSlice";
+import { DealCategory } from "../types";
+import { DEFAULT_RADIUS_KM } from "../lib/constants";
+import { LocationPermissionGate } from "../components/map/LocationPermissionGate";
+import { useAuth } from "../hooks/useAuth";
+import { getErrorMessage } from "../lib/errors";
+import { sanitizeUrl, isValidImageUrl } from "../lib/sanitize";
+import {
+  Sparkles,
+  Box,
+  Code,
+  Wrench,
+  Package,
+  Check,
+  AlertCircle,
+  MapPin,
+  ArrowLeft,
+  Crosshair,
+  Shield,
+} from "lucide-react";
+
+const CATEGORY_OPTIONS: Array<{
+  value: DealCategory;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+}> = [
+  {
+    value: "Physical Resource",
+    label: "Physical Resource",
+    description: "Borrow tools, appliances, projectors, ladders, tables",
+    icon: <Box className="w-5 h-5" />,
+  },
+  {
+    value: "Skill",
+    label: "Skill & Mentorship",
+    description: "Coding assistance, tutoring, design review, music coaching",
+    icon: <Code className="w-5 h-5" />,
+  },
+  {
+    value: "Service",
+    label: "Local Service",
+    description: "Help moving, shelf assembly, repairs, photography",
+    icon: <Wrench className="w-5 h-5" />,
+  },
+  {
+    value: "Equipment",
+    label: "Heavy Equipment",
+    description: "Generators, cameras, drills, lawnmowers, synthesizers",
+    icon: <Package className="w-5 h-5" />,
+  },
+];
+
+const PRESET_ITEM_IMAGES = [
+  { label: "Projector / Screen", url: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&auto=format&fit=crop&q=80" },
+  { label: "Power Drill", url: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&auto=format&fit=crop&q=80" },
+  { label: "Camera Kit", url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80" },
+  { label: "Dev / Coding", url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80" },
+  { label: "Furniture / Move", url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop&q=80" },
+  { label: "Acoustic Guitar", url: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&auto=format&fit=crop&q=80" },
+  { label: "Camping Tent", url: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&auto=format&fit=crop&q=80" },
+];
+
+export function CreateDeal() {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { user } = useAuth();
+  const locationState = useAppSelector((state) => state.location);
+  const { userLocation } = useAppSelector((state) => state.deals);
+
+  const [category, setCategory] = useState<DealCategory>("Physical Resource");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState(PRESET_ITEM_IMAGES[0].url);
+  const [budgetMin, setBudgetMin] = useState<number | string>(500);
+  const [budgetMax, setBudgetMax] = useState<number | string>(800);
+  const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_KM);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const activeLat = locationState.lat || userLocation?.lat || 0;
+  const activeLng = locationState.lng || userLocation?.lng || 0;
+  const activeAddress = locationState.address || userLocation?.address || "";
+  const activeCity = locationState.cityName || userLocation?.cityName || "";
+
+  useEffect(() => {
+    if (!activeLat && !activeLng && locationState.permission === "prompt") {
+      dispatch(requestUserLocation());
+    }
+  }, [dispatch, activeLat, activeLng, locationState.permission]);
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFetchLocation = () => {
+    setIsLocating(true);
+    dispatch(requestUserLocation())
+      .unwrap()
+      .catch(() => {})
+      .finally(() => setIsLocating(false));
+  };
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!title.trim() || title.trim().length < 5) {
+      errs.title = "Title must be at least 5 characters.";
+    }
+    if (!description.trim() || description.trim().length < 10) {
+      errs.description = "Please describe what you are looking for (min 10 characters).";
+    }
+    if (!budgetMin || Number(budgetMin) <= 0) {
+      errs.budget = "Please enter a valid minimum budget.";
+    }
+    if (budgetMax && Number(budgetMax) < Number(budgetMin)) {
+      errs.budget = "Maximum budget must be greater than or equal to minimum budget.";
+    }
+    if (!activeLat || !activeLng) {
+      errs.location = "Location access is required to post a deal in your neighborhood. Please allow GPS location.";
+    }
+    if (imageUrl.trim() && !isValidImageUrl(imageUrl.trim())) {
+      errs.image = "Please provide a valid https:// image URL.";
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+    try {
+      const sanitizedImg = imageUrl.trim() ? sanitizeUrl(imageUrl.trim()) : undefined;
+      const created = await dispatch(
+        createDeal({
+          title: title.trim(),
+          description: description.trim(),
+          category,
+          budgetMin: Number(budgetMin),
+          budgetMax: Number(budgetMax) || Number(budgetMin),
+          lat: activeLat,
+          lng: activeLng,
+          radiusKm,
+          address: activeAddress || activeCity || "Current GPS Location",
+          image_url: sanitizedImg || undefined,
+        })
+      ).unwrap();
+
+      navigate(`/deals/${created.id}`);
+    } catch (err: any) {
+      setErrors({ form: getErrorMessage(err, "Failed to post deal. Please try again.") });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+      {/* Top Back Navigation */}
+      <button
+        onClick={() => navigate(-1)}
+        className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-[#059669] transition-colors cursor-pointer"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back</span>
+      </button>
+
+      {/* Top Map Visual Live Radar Banner */}
+      <div className="relative rounded-3xl overflow-hidden border border-[#E5E5E2] bg-gray-900 shadow-xs">
+        <LocationPermissionGate heightClass="h-56 sm:h-64" />
+      </div>
+
+      {errors.form && (
+        <div className="flex items-center gap-2 text-xs text-rose-600 bg-rose-50 p-4 rounded-2xl border border-rose-200">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errors.form}</span>
+        </div>
+      )}
+
+      {/* Form Content */}
+      <form id="create-deal-form" onSubmit={handleSubmit} className="space-y-6">
+        {/* Section 1: Category Selection */}
+        <div className="space-y-3">
+          <label className="block text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+            1. Select Category
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {CATEGORY_OPTIONS.map((cat) => {
+              const isSelected = category === cat.value;
+              return (
+                <button
+                  key={cat.value}
+                  type="button"
+                  id={`cat-select-${cat.value.toLowerCase().replace(/\s+/g, "-")}`}
+                  onClick={() => setCategory(cat.value)}
+                  className={`p-4 rounded-2xl border text-left transition-all flex items-start justify-between cursor-pointer ${
+                    isSelected
+                      ? "bg-[var(--surface)] border-[var(--ink)] ring-2 ring-[var(--ink)]/20 shadow-xs"
+                      : "bg-[var(--surface)] border-[var(--line)] hover:border-[var(--muted)]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`p-2 rounded-xl ${
+                        isSelected ? "bg-[var(--ink)] text-[var(--paper)]" : "bg-[var(--paper)] text-[var(--muted)]"
+                      }`}
+                    >
+                      {cat.icon}
+                    </div>
+                    <div>
+                      <div className="font-bold text-[var(--ink)] text-sm">{cat.label}</div>
+                      <div className="text-xs text-[var(--muted)] mt-0.5">{cat.description}</div>
+                    </div>
+                  </div>
+                  {isSelected && (
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Section 2: Item Image & Visual Preview */}
+        <div className="bg-[var(--surface)] rounded-3xl p-6 sm:p-8 border border-[var(--line)] shadow-2xs space-y-4">
+          <label className="block text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+            2. Item Photograph / Visual Reference
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
+            <div className="sm:col-span-4 h-36 rounded-2xl overflow-hidden bg-[var(--paper)] border border-[var(--line)] relative group">
+              <img
+                src={imageUrl || PRESET_ITEM_IMAGES[0].url}
+                alt="Item preview"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-2 left-2 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs">
+                Live Item Preview
+              </div>
+            </div>
+
+            <div className="sm:col-span-8 space-y-3">
+              <div className="text-xs text-[var(--muted)] font-medium">
+                Choose a preset visual matching your need or provide a custom image link:
+              </div>
+
+              {/* Preset buttons */}
+              <div className="flex flex-wrap gap-1.5">
+                {PRESET_ITEM_IMAGES.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setImageUrl(preset.url)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                      imageUrl === preset.url
+                        ? "bg-[var(--ink)] text-[var(--paper)] border-[var(--ink)] shadow-2xs"
+                        : "bg-[var(--paper)] text-[var(--ink)] border-[var(--line)] hover:bg-[var(--line)]/40"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Or paste an image URL (https://...)"
+                className="w-full px-3.5 py-2 bg-[var(--paper)] rounded-xl text-xs text-[var(--ink)] border border-[var(--line)] focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-medium placeholder:text-[var(--muted)]"
+              />
+              {errors.image && <p className="text-xs text-rose-500 font-medium">{errors.image}</p>}
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Need Title & Description */}
+        <div className="bg-[var(--surface)] rounded-3xl p-6 sm:p-8 border border-[var(--line)] shadow-2xs space-y-5">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-2">
+              3. Need Title & Specifications
+            </label>
+            <input
+              id="deal-title-input"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="What equipment, skill, or resource do you need?"
+              className={`w-full px-4 py-3 bg-[var(--paper)] rounded-xl text-sm font-semibold text-[var(--ink)] border ${
+                errors.title ? "border-rose-400 focus:ring-rose-200" : "border-[var(--line)] focus:border-[var(--ink)]"
+              } focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-[var(--muted)]`}
+            />
+            {errors.title && <p className="text-xs text-rose-500 mt-1 font-medium">{errors.title}</p>}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[var(--ink)] mb-1.5">
+              Detailed Description & Terms
+            </label>
+            <textarea
+              id="deal-description-input"
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Specify requirements, timing, exact model specs, duration needed, and handover preferences..."
+              className={`w-full p-4 bg-[var(--paper)] rounded-xl text-sm text-[var(--ink)] border ${
+                errors.description
+                  ? "border-rose-400 focus:ring-rose-200"
+                  : "border-[var(--line)] focus:border-[var(--ink)]"
+              } focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all leading-relaxed placeholder:text-[var(--muted)]`}
+            />
+            {errors.description && (
+              <p className="text-xs text-rose-500 mt-1 font-medium">{errors.description}</p>
+            )}
+          </div>
+
+          {/* Budget Range */}
+          <div>
+            <label className="block text-xs font-bold text-[var(--ink)] mb-2">
+              Expected Budget Range (₹)
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <span className="text-[11px] text-[var(--muted)] font-medium block mb-1">Minimum Budget</span>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] font-bold text-sm">
+                    ₹
+                  </span>
+                  <input
+                    id="deal-budget-min-input"
+                    type="number"
+                    min="0"
+                    value={budgetMin}
+                    onChange={(e) => setBudgetMin(e.target.value)}
+                    placeholder="Min ₹"
+                    className="w-full pl-8 pr-4 py-2.5 bg-[var(--paper)] rounded-xl text-sm font-semibold text-[var(--ink)] border border-[var(--line)] focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-[var(--muted)]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[11px] text-[var(--muted)] font-medium block mb-1">Maximum Budget</span>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] font-bold text-sm">
+                    ₹
+                  </span>
+                  <input
+                    id="deal-budget-max-input"
+                    type="number"
+                    min="0"
+                    value={budgetMax}
+                    onChange={(e) => setBudgetMax(e.target.value)}
+                    placeholder="Max ₹"
+                    className="w-full pl-8 pr-4 py-2.5 bg-[var(--paper)] rounded-xl text-sm font-semibold text-[var(--ink)] border border-[var(--line)] focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-[var(--muted)]"
+                  />
+                </div>
+              </div>
+            </div>
+            {errors.budget && <p className="text-xs text-rose-500 mt-1 font-medium">{errors.budget}</p>}
+          </div>
+        </div>
+
+        {/* Section 4: Location & Discovery Radius */}
+        <div className="bg-[var(--surface)] rounded-3xl p-6 sm:p-8 border border-[var(--line)] shadow-2xs space-y-5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+            4. Current Location & Broadcast Radius
+          </label>
+
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--paper)] border border-[var(--line)]">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-500">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-[var(--ink)]">
+                  {activeCity || activeAddress || "Location not detected"}
+                </div>
+                <div className="text-[11px] text-[var(--muted)]">
+                  {activeLat && activeLng
+                    ? `GPS: ${activeLat.toFixed(4)}, ${activeLng.toFixed(4)}`
+                    : "Allow location access to anchor your deal to your neighborhood"}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleFetchLocation}
+              disabled={isLocating}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Crosshair className={`w-3.5 h-3.5 ${isLocating ? "animate-spin" : ""}`} />
+              <span>{isLocating ? "Locating..." : activeLat ? "Update GPS" : "Detect GPS"}</span>
+            </button>
+          </div>
+
+          {errors.location && (
+            <p className="text-xs text-rose-500 font-medium flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>{errors.location}</span>
+            </p>
+          )}
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-[var(--ink)]">Broadcast Range</span>
+              <span className="text-xs font-black text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                {radiusKm} km
+              </span>
+            </div>
+            <input
+              id="deal-radius-slider"
+              type="range"
+              min="1"
+              max="25"
+              step="1"
+              value={radiusKm}
+              onChange={(e) => setRadiusKm(Number(e.target.value))}
+              className="w-full accent-emerald-500 cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-[var(--muted)] mt-1 font-semibold">
+              <span>1 km (Hyperlocal)</span>
+              <span>8 km (District sector)</span>
+              <span>25 km (Metropolitan)</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
+            <Shield className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Exact coordinates are obscured on public map for privacy</span>
+          </div>
+        </div>
+
+        {/* Post Button */}
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="px-5 py-3 rounded-full text-xs font-bold text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface)] transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            id="publish-deal-btn"
+            type="submit"
+            disabled={isSubmitting}
+            className="px-8 py-3.5 rounded-full bg-[var(--ink)] hover:opacity-90 text-[var(--paper)] text-sm font-bold shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2 active:scale-95"
+          >
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>{isSubmitting ? "Broadcasting Need..." : "Publish to Community Radar"}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
