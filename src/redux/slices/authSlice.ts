@@ -32,7 +32,7 @@ const initialState: AuthState = {
 
 export const fetchMe = createAsyncThunk("auth/fetchMe", async (_, { rejectWithValue }) => {
   try {
-    const data = await api.get<any, UserProfile>("/api/auth/me");
+    const data = await api.get<any, UserProfile>("/auth/me");
     return data;
   } catch (err: unknown) {
     return rejectWithValue(toAuthReject(err, "Failed to authenticate session"));
@@ -43,7 +43,7 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const data = await api.post<any, UserProfile>("/api/auth/login", {
+      const data = await api.post<any, UserProfile>("/auth/login", {
         email: credentials.email.trim().toLowerCase(),
         password: credentials.password,
       });
@@ -58,7 +58,7 @@ export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const data = await api.post<any, UserProfile>("/api/auth/register", {
+      const data = await api.post<any, UserProfile>("/auth/register", {
         email: credentials.email.trim().toLowerCase(),
         password: credentials.password,
       });
@@ -80,7 +80,7 @@ export const loginWithGoogle = createAsyncThunk(
         typeof payload === "string"
           ? { idToken: payload }
           : { idToken: payload.idToken, refreshToken: payload.refreshToken };
-      const data = await api.post<any, UserProfile>("/api/auth/google", body);
+      const data = await api.post<any, UserProfile>("/auth/google", body);
       return data;
     } catch (err: unknown) {
       return rejectWithValue(toAuthReject(err, "Google sign-in failed"));
@@ -90,7 +90,7 @@ export const loginWithGoogle = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { rejectWithValue }) => {
   try {
-    await api.post("/api/auth/logout");
+    await api.post("/auth/logout");
     return null;
   } catch (err: unknown) {
     return rejectWithValue(getErrorMessage(err, "Logout failed"));
@@ -104,7 +104,7 @@ export const updateProfile = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const data = await api.patch<any, UserProfile>("/api/auth/update", payload);
+      const data = await api.patch<any, UserProfile>("/auth/update", payload);
       return data;
     } catch (err: unknown) {
       return rejectWithValue(getErrorMessage(err, "Failed to update profile"));
@@ -116,7 +116,7 @@ export const changePassword = createAsyncThunk(
   "auth/changePassword",
   async (payload: { currentPassword: string; newPassword: string }, { rejectWithValue }) => {
     try {
-      await api.patch("/api/auth/change-password", payload);
+      await api.patch("/auth/change-password", payload);
       return true;
     } catch (err: unknown) {
       return rejectWithValue(getErrorMessage(err, "Failed to change password"));

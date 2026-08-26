@@ -12,10 +12,14 @@ export interface NearbyDiscoveryResponse {
   total: number;
 }
 
+const apiBase =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "") ||
+  "https://dealpool-backend.onrender.com/api";
+
 export const discoveryApi = createApi({
   reducerPath: "discoveryApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "/",
+    baseUrl: apiBase,
   }),
   tagTypes: ["Discovery"],
   endpoints: (builder) => ({
@@ -24,7 +28,7 @@ export const discoveryApi = createApi({
       { lat: number; lng: number; radiusKm: number }
     >({
       query: ({ lat, lng, radiusKm }) => ({
-        url: `/api/discovery/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}`,
+        url: `/discovery/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}`,
         method: "GET",
       }),
       transformResponse: (rawResult: any, _meta, arg) => {

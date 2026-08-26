@@ -22,7 +22,7 @@ export const fetchOffersForDeal = createAsyncThunk(
   "offers/fetchOffersForDeal",
   async (dealId: string, { rejectWithValue }) => {
     try {
-      const data = await api.get<any, Offer[]>(`/api/deals/${dealId}/offers`);
+      const data = await api.get<any, Offer[]>(`/deals/${dealId}/offers`);
       return { dealId, offers: data };
     } catch (err: unknown) {
       return rejectWithValue(getErrorMessage(err, "Failed to fetch offers"));
@@ -37,7 +37,7 @@ export const createOffer = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const data = await api.post<any, Offer>(`/api/deals/${dealId}/offers`, { price, terms });
+      const data = await api.post<any, Offer>(`/deals/${dealId}/offers`, { price, terms });
       return data;
     } catch (err: unknown) {
       return rejectWithValue(getErrorMessage(err, "Failed to submit offer"));
@@ -49,7 +49,7 @@ export const acceptOffer = createAsyncThunk(
   "offers/acceptOffer",
   async (offerId: string, { dispatch, rejectWithValue }) => {
     try {
-      const data = await api.patch<any, Offer>(`/api/offers/${offerId}/accept`);
+      const data = await api.patch<any, Offer>(`/offers/${offerId}/accept`);
       dispatch(fetchWallet());
       return data;
     } catch (err: unknown) {
@@ -62,7 +62,7 @@ export const rejectOffer = createAsyncThunk(
   "offers/rejectOffer",
   async (offerId: string, { rejectWithValue }) => {
     try {
-      const data = await api.patch<any, Offer>(`/api/offers/${offerId}/reject`);
+      const data = await api.patch<any, Offer>(`/offers/${offerId}/reject`);
       return data;
     } catch (err: unknown) {
       return rejectWithValue(getErrorMessage(err, "Failed to reject offer"));
@@ -74,7 +74,7 @@ export const withdrawOffer = createAsyncThunk(
   "offers/withdrawOffer",
   async (offerId: string, { rejectWithValue }) => {
     try {
-      const data = await api.patch<any, Offer>(`/api/offers/${offerId}/withdraw`);
+      const data = await api.patch<any, Offer>(`/offers/${offerId}/withdraw`);
       return data;
     } catch (err: unknown) {
       return rejectWithValue(getErrorMessage(err, "Failed to withdraw offer"));

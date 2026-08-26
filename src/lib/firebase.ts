@@ -31,7 +31,7 @@ function getFirebaseAuth(): Auth {
   return auth!;
 }
 
-/** Popup Google sign-in; returns tokens for POST /api/auth/google. */
+/** Popup Google sign-in; returns tokens for POST /auth/google. */
 export async function getGoogleAuthTokens(): Promise<{
   idToken: string;
   refreshToken?: string;

@@ -29,7 +29,7 @@ export function Admin() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<any, UserProfile[]>("/api/admin/users");
+      const data = await api.get<any, UserProfile[]>("/admin/users");
       setUsers(data || []);
     } catch (err: any) {
       setError(getErrorMessage(err, "Failed to load admin user directory."));
@@ -48,7 +48,7 @@ export function Admin() {
     setError(null);
     setSuccessMsg(null);
     try {
-      await api.patch(`/api/admin/users/${userId}/role`, { role: newRole });
+      await api.patch(`/admin/users/${userId}/role`, { role: newRole });
       setSuccessMsg(`Role updated to ${newRole}`);
       fetchUsers();
       setTimeout(() => setSuccessMsg(null), 3000);
@@ -61,7 +61,7 @@ export function Admin() {
     if (!window.confirm("Are you sure you want to delete this profile?")) return;
     setError(null);
     try {
-      await api.delete(`/api/admin/users/${userId}`);
+      await api.delete(`/admin/users/${userId}`);
       setSuccessMsg("User profile deleted.");
       fetchUsers();
       setTimeout(() => setSuccessMsg(null), 3000);

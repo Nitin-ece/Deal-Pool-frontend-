@@ -53,7 +53,7 @@ export const fetchNearbyDeals = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const url = `/api/deals/nearby?lat=${params.lat}&lng=${params.lng}&radiusKm=${params.radiusKm}${
+      const url = `/deals/nearby?lat=${params.lat}&lng=${params.lng}&radiusKm=${params.radiusKm}${
         params.category && params.category !== "All" ? `&category=${encodeURIComponent(params.category)}` : ""
       }`;
       const data = await api.get<any, Deal[]>(url);
@@ -72,7 +72,7 @@ export const fetchAllDeals = createAsyncThunk(
       if (params.category && params.category !== "All") queryParts.push(`category=${encodeURIComponent(params.category)}`);
       if (params.status && params.status !== "all") queryParts.push(`status=${encodeURIComponent(params.status)}`);
       if (params.userId) queryParts.push(`userId=${encodeURIComponent(params.userId)}`);
-      const url = `/api/deals${queryParts.length ? `?${queryParts.join("&")}` : ""}`;
+      const url = `/deals${queryParts.length ? `?${queryParts.join("&")}` : ""}`;
       const data = await api.get<any, Deal[]>(url);
       return data;
     } catch (err: any) {
@@ -85,7 +85,7 @@ export const fetchDealById = createAsyncThunk(
   "deals/fetchDealById",
   async (dealId: string, { rejectWithValue }) => {
     try {
-      const data = await api.get<any, Deal>(`/api/deals/${dealId}`);
+      const data = await api.get<any, Deal>(`/deals/${dealId}`);
       return data;
     } catch (err: any) {
       return rejectWithValue(getErrorMessage(err, "Failed to fetch deal details"));
@@ -111,7 +111,7 @@ export const createDeal = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const data = await api.post<any, Deal>("/api/deals", payload);
+      const data = await api.post<any, Deal>("/deals", payload);
       return data;
     } catch (err: any) {
       return rejectWithValue(getErrorMessage(err, "Failed to create deal"));
@@ -141,7 +141,7 @@ export const updateDeal = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const data = await api.patch<any, Deal>(`/api/deals/${id}`, payload);
+      const data = await api.patch<any, Deal>(`/deals/${id}`, payload);
       return data;
     } catch (err: any) {
       return rejectWithValue(getErrorMessage(err, "Failed to update deal"));
@@ -153,7 +153,7 @@ export const deleteDeal = createAsyncThunk(
   "deals/deleteDeal",
   async (dealId: string, { rejectWithValue }) => {
     try {
-      await api.delete(`/api/deals/${dealId}`);
+      await api.delete(`/deals/${dealId}`);
       return dealId;
     } catch (err: any) {
       return rejectWithValue(getErrorMessage(err, "Failed to delete deal"));

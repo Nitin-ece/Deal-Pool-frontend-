@@ -2,7 +2,8 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { getErrorMessage } from "../lib/errors";
 
 const apiBase =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "") || "";
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "") ||
+  "https://dealpool-backend.onrender.com/api";
 
 /** Axios instance for cookie-based auth (httpOnly access/refresh tokens). */
 export const api = axios.create({
@@ -44,10 +45,10 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     const isAuthEndpoint =
-      originalRequest?.url?.includes("/api/auth/login") ||
-      originalRequest?.url?.includes("/api/auth/register") ||
-      originalRequest?.url?.includes("/api/auth/google") ||
-      originalRequest?.url?.includes("/api/auth/refresh");
+      originalRequest?.url?.includes("/auth/login") ||
+      originalRequest?.url?.includes("/auth/register") ||
+      originalRequest?.url?.includes("/auth/google") ||
+      originalRequest?.url?.includes("/auth/refresh");
 
     if (
       error.response?.status === 401 &&
@@ -68,7 +69,7 @@ api.interceptors.response.use(
 
       try {
         await axios.post(
-          `${apiBase}/api/auth/refresh`,
+          `${apiBase}/auth/refresh`,
           {},
           { withCredentials: true }
         );

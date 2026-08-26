@@ -40,7 +40,7 @@ export function MyDeals() {
     const fetchUserOffers = async () => {
       setOffersLoading(true);
       try {
-        const res = await api.get<any, Offer[]>("/api/offers/my");
+        const res = await api.get<any, Offer[]>("/offers/my");
         setMyOffers(res || []);
       } catch {
         setMyOffers([]);

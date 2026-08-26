@@ -34,7 +34,7 @@ export const fetchWallet = createAsyncThunk(
   "wallet/fetchWallet",
   async (_, { rejectWithValue }) => {
     try {
-      const data = await api.get<any, WalletSummary>("/api/wallet");
+      const data = await api.get<any, WalletSummary>("/wallet");
       return data;
     } catch (err: any) {
       return rejectWithValue(err?.message || "Failed to load wallet");
@@ -46,7 +46,7 @@ export const fetchLedger = createAsyncThunk(
   "wallet/fetchLedger",
   async (_, { rejectWithValue }) => {
     try {
-      const data = await api.get<any, LedgerEntry[]>("/api/wallet/ledger");
+      const data = await api.get<any, LedgerEntry[]>("/wallet/ledger");
       return Array.isArray(data) ? data : [];
     } catch (err: any) {
       return rejectWithValue(err?.message || "Failed to load ledger history");
@@ -58,7 +58,7 @@ export const depositCoins = createAsyncThunk(
   "wallet/depositCoins",
   async (amount: number, { dispatch, rejectWithValue }) => {
     try {
-      const data = await api.post<any, WalletSummary>("/api/wallet/deposit", { amount });
+      const data = await api.post<any, WalletSummary>("/wallet/deposit", { amount });
       dispatch(fetchLedger());
       return data;
     } catch (err: any) {
