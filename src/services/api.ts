@@ -1,9 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { getErrorMessage } from "../lib/errors";
 
-const apiBase =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "") ||
-  (import.meta.env.PROD ? "/api" : "https://dealpool-backend.onrender.com/api");
+const apiBase = "/api";
 
 /** Axios instance for cookie-based auth (httpOnly access/refresh tokens). */
 export const api = axios.create({
