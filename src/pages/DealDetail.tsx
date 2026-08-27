@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../redux/store";
-import { fetchDealById, deleteDeal, updateDeal } from "../redux/slices/dealsSlice";
+import { fetchDealById, deleteDeal, updateDeal, clearCurrentDeal } from "../redux/slices/dealsSlice";
+import { discoveryApi } from "../redux/services/discoveryApi";
+import { toast } from "sonner";
 import { fetchOffersForDeal, acceptOffer, rejectOffer, withdrawOffer } from "../redux/slices/offersSlice";
 import { useAuth } from "../hooks/useAuth";
 import { MakeOfferForm } from "../components/offers/MakeOfferForm";
@@ -116,8 +118,16 @@ export function DealDetail() {
 
   const handleDeleteDeal = async () => {
     if (!id) return;
-    await dispatch(deleteDeal(id));
-    navigate("/deals");
+    try {
+      await dispatch(deleteDeal(id)).unwrap();
+      toast.success("Need deleted successfully");
+      dispatch(discoveryApi.util.invalidateTags(["Discovery"]));
+      dispatch(clearCurrentDeal());
+      navigate("/deals");
+    } catch (err: any) {
+      toast.error(err || "Failed to delete need");
+      console.error("Failed to delete deal:", err);
+    }
   };
 
   const handleShare = () => {

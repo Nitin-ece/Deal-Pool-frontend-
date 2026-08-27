@@ -20,6 +20,7 @@ export const discoveryApi = createApi({
   reducerPath: "discoveryApi",
   baseQuery: fetchBaseQuery({
     baseUrl: apiBase,
+    credentials: "include",
   }),
   tagTypes: ["Discovery"],
   endpoints: (builder) => ({
