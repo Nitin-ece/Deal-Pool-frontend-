@@ -3,7 +3,7 @@ import { getErrorMessage } from "../lib/errors";
 
 const apiBase =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "") ||
-  "https://dealpool-backend.onrender.com/api";
+  (import.meta.env.PROD ? "/api" : "https://dealpool-backend.onrender.com/api");
 
 /** Axios instance for cookie-based auth (httpOnly access/refresh tokens). */
 export const api = axios.create({

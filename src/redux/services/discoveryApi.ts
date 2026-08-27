@@ -14,7 +14,7 @@ export interface NearbyDiscoveryResponse {
 
 const apiBase =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "") ||
-  "https://dealpool-backend.onrender.com/api";
+  (import.meta.env.PROD ? "/api" : "https://dealpool-backend.onrender.com/api");
 
 export const discoveryApi = createApi({
   reducerPath: "discoveryApi",
