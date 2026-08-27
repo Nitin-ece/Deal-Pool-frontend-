@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { BrandMark } from "../components/common/BrandMark";
+import { LoadingScreen } from "../components/common/LoadingScreen";
 import { MaskedHeading } from "../components/common/MaskedHeading";
 import { DotGridBG } from "../components/common/DotGridBG";
 import { Meteors } from "@/registry/magicui/meteors";
@@ -116,6 +117,10 @@ export function Landing() {
   useEffect(() => {
     if (user) navigate("/deals", { replace: true });
   }, [user, navigate]);
+
+  if (!initialized) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="relative min-h-screen bg-black text-[#f4f4f5] selection:bg-white selection:text-black antialiased overflow-x-hidden">

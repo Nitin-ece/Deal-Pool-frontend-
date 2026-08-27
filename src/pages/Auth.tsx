@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AlertCircle, Compass, LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { BrandMark } from "../components/common/BrandMark";
+import { LoadingScreen } from "../components/common/LoadingScreen";
 import { getErrorMessage } from "../lib/errors";
 import { getGoogleAuthTokens, isFirebaseConfigured } from "../lib/firebase";
 import { useAppDispatch } from "../redux/store";
@@ -41,6 +42,10 @@ export function Auth({ initialMode = "login" }: AuthProps) {
   useEffect(() => {
     setMode(location.pathname.includes("register") ? "register" : initialMode);
   }, [location.pathname, initialMode]);
+
+  if (!initialized) {
+    return <LoadingScreen />;
+  }
 
   const displayError = localError || (typeof error === "string" && error.trim() ? error : null);
 

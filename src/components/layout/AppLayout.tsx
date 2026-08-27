@@ -6,6 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import { requestUserLocation } from "../../redux/slices/locationSlice";
 import { setUserLocation } from "../../redux/slices/dealsSlice";
+import { LoadingScreen } from "../common/LoadingScreen";
 
 export function AppLayout() {
   const dispatch = useAppDispatch();
@@ -15,6 +16,10 @@ export function AppLayout() {
   useEffect(() => {
     if (!initialized) checkAuth();
   }, [checkAuth, initialized]);
+
+  if (!initialized) {
+    return <LoadingScreen />;
+  }
 
   // Request browser location automatically on mount
   useEffect(() => {
