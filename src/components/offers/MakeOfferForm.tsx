@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAppDispatch } from "../../redux/store";
 import { createOffer } from "../../redux/slices/offersSlice";
 import { Send, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
+import { saveSubmittedOfferDealId } from "../../lib/offersHelper";
 
 interface MakeOfferFormProps {
   dealId: string;
@@ -46,6 +47,7 @@ export function MakeOfferForm({
         })
       ).unwrap();
 
+      saveSubmittedOfferDealId(dealId);
       setSuccess(true);
       setTerms("");
       if (onSuccess) onSuccess();

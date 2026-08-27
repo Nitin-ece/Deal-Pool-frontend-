@@ -6,7 +6,6 @@ import { Search, Box, Code, Wrench, Package, Layers } from "lucide-react";
 const CATEGORIES: Array<{ label: string; value: string; icon: React.ReactNode }> = [
   { label: "All Needs", value: "All", icon: <Layers className="w-3.5 h-3.5" /> },
   { label: "Physical Resource", value: "Physical Resource", icon: <Box className="w-3.5 h-3.5" /> },
-  { label: "Skill", value: "Skill", icon: <Code className="w-3.5 h-3.5" /> },
   { label: "Service", value: "Service", icon: <Wrench className="w-3.5 h-3.5" /> },
   { label: "Equipment", value: "Equipment", icon: <Package className="w-3.5 h-3.5" /> },
 ];
@@ -28,7 +27,7 @@ export function DealFilters() {
             type="text"
             value={searchQuery}
             onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-            placeholder="Search needs, skills, equipment..."
+            placeholder="Search needs, services, equipment..."
             className="w-full pl-10 pr-4 py-2.5 bg-[var(--surface)] rounded-xl text-xs sm:text-sm text-[var(--ink)] border border-[var(--line)] focus:outline-none focus:ring-2 focus:ring-[var(--signal)] transition-all placeholder:text-[var(--muted)]"
           />
           {searchQuery && (

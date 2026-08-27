@@ -93,7 +93,7 @@ export function LocationPermissionGate({
               Enable Location for Hyperlocal Deals
             </h3>
             <p className="text-xs text-white/70 leading-relaxed max-w-sm">
-              DealPool uses your browser location to show available deals, tools, and skills around you. Please allow location access to activate the map radar.
+              DealPool uses your browser location to show available deals, tools, and services around you. Please allow location access to activate the map radar.
             </p>
           </div>
 

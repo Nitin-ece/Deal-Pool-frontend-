@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { DEFAULT_CATEGORY_IMAGES } from "../lib/categoryImages";
+import { getSubmittedOfferDealIds, removeSubmittedOfferDealId } from "../lib/offersHelper";
 
 export function MyDeals() {
   const navigate = useNavigate();
@@ -40,9 +41,38 @@ export function MyDeals() {
     const fetchUserOffers = async () => {
       setOffersLoading(true);
       try {
-        const res = await api.get<any, Offer[]>("/offers/my");
-        setMyOffers(res || []);
-      } catch {
+        const dealIds = getSubmittedOfferDealIds();
+        if (dealIds.length === 0) {
+          setMyOffers([]);
+          return;
+        }
+
+        const offersPromises = dealIds.map(async (dealId) => {
+          try {
+            const offersList = await api.get<any, Offer[]>(`/deals/${dealId}/offers`);
+            return { dealId, offers: offersList || [] };
+          } catch (err: any) {
+            if (err?.code === "NOT_FOUND" || err?.status === 404) {
+              removeSubmittedOfferDealId(dealId);
+            }
+            return { dealId, offers: [] };
+          }
+        });
+
+        const results = await Promise.all(offersPromises);
+        const collectedOffers: Offer[] = [];
+        results.forEach(({ offers }) => {
+          offers.forEach((offer) => {
+            if (offer.provider_id === user.id) {
+              collectedOffers.push(offer);
+            }
+          });
+        });
+
+        collectedOffers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setMyOffers(collectedOffers);
+      } catch (err) {
+        console.error("Failed to fetch user offers", err);
         setMyOffers([]);
       } finally {
         setOffersLoading(false);
@@ -203,7 +233,7 @@ export function MyDeals() {
               </div>
               <h3 className="font-bold text-[var(--ink)] text-base font-display">No offers submitted yet</h3>
               <p className="text-xs text-[var(--muted)] max-w-sm mx-auto font-normal">
-                Explore the community radar to find neighbors seeking your tools, equipment, or skills.
+                Explore the community radar to find neighbors seeking your tools, equipment, or services.
               </p>
               <div className="pt-2">
                 <Link

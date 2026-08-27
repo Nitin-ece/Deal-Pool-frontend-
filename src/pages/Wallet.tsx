@@ -263,6 +263,53 @@ export function Wallet() {
             </button>
           </div>
         </motion.div>
+
+        {/* Payment & Escrow Explainer */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.1 }}
+          className="mt-6 rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm space-y-4"
+        >
+          <div className="flex items-center gap-2 border-b border-[var(--line)] pb-3">
+            <Lock className="h-4 w-4 text-emerald-500" />
+            <h3 className="font-display font-extrabold text-sm text-[var(--ink)]">
+              How Escrow Payments Work
+            </h3>
+          </div>
+          
+          <div className="space-y-3.5 text-xs text-[var(--muted)] leading-relaxed">
+            <div className="flex gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-500">
+                1
+              </span>
+              <div>
+                <p className="font-bold text-[var(--ink)]">Submit a Proposal</p>
+                <p>Propose a rental price and terms on a neighbor's need. No coins are charged or transferred at this stage.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-500">
+                2
+              </span>
+              <div>
+                <p className="font-bold text-[var(--ink)]">Locking Escrow (On Accept)</p>
+                <p>When the need poster accepts, their wallet locks the **Lending Fee** + **Security Deposit** in a secure escrow contract. The deposit rate is calculated based on the item value.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-500">
+                3
+              </span>
+              <div>
+                <p className="font-bold text-[var(--ink)]">Release & Payout</p>
+                <p>Upon completion, the **Lending Fee** is paid to the provider, and the **Security Deposit** is returned in full to the requester's wallet.</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

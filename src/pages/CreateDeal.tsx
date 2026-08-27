@@ -36,12 +36,6 @@ const CATEGORY_OPTIONS: Array<{
     icon: <Box className="w-5 h-5" />,
   },
   {
-    value: "Skill",
-    label: "Skill & Mentorship",
-    description: "Coding assistance, tutoring, design review, music coaching",
-    icon: <Code className="w-5 h-5" />,
-  },
-  {
     value: "Service",
     label: "Local Service",
     description: "Help moving, shelf assembly, repairs, photography",
@@ -75,6 +69,7 @@ export function CreateDeal() {
   const [category, setCategory] = useState<DealCategory>("Physical Resource");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [imageUrl, setImageUrl] = useState(PRESET_ITEM_IMAGES[0].url);
   const [budgetMin, setBudgetMin] = useState<number | string>(500);
   const [budgetMax, setBudgetMax] = useState<number | string>(800);
@@ -139,10 +134,13 @@ export function CreateDeal() {
     setIsSubmitting(true);
     try {
       const sanitizedImg = imageUrl.trim() ? sanitizeUrl(imageUrl.trim()) : undefined;
+      const finalDescription = contactPhone.trim()
+        ? `${description.trim()}\n\n--- CONTACT INFO ---\nPhone: ${contactPhone.trim()}`
+        : description.trim();
       const created = await dispatch(
         createDeal({
           title: title.trim(),
-          description: description.trim(),
+          description: finalDescription,
           category,
           budgetMin: Number(budgetMin),
           budgetMax: Number(budgetMax) || Number(budgetMin),
@@ -323,6 +321,20 @@ export function CreateDeal() {
             {errors.description && (
               <p className="text-xs text-rose-500 mt-1 font-medium">{errors.description}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[var(--ink)] mb-1.5">
+              Contact Phone Number (shared in description)
+            </label>
+            <input
+              id="deal-contact-phone-input"
+              type="tel"
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
+              placeholder="e.g. +91 98765 43210"
+              className="w-full px-4 py-3 bg-[var(--paper)] rounded-xl text-sm font-semibold text-[var(--ink)] border border-[var(--line)] focus:border-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-[var(--muted)]"
+            />
           </div>
 
           {/* Budget Range */}

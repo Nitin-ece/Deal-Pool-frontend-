@@ -19,7 +19,6 @@ export interface UserProfile {
 
 export type DealCategory =
   | "Physical Resource"
-  | "Skill"
   | "Service"
   | "Equipment"
   | "Other";

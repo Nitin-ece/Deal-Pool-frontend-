@@ -8,6 +8,7 @@ import { StatusBadge } from "../common/StatusBadge";
 import { CategoryBadge } from "../common/CategoryBadge";
 import { WalletModal } from "../wallet/WalletModal";
 import { AcceptOfferModal } from "./AcceptOfferModal";
+import { saveSubmittedOfferDealId } from "../../lib/offersHelper";
 import {
   X,
   Send,
@@ -95,6 +96,7 @@ export function OffersPanel({ deal, isOpen, onClose }: OffersPanelProps) {
         })
       ).unwrap();
 
+      saveSubmittedOfferDealId(deal.id);
       setSuccessNotice("Your offer was submitted to the deal requester!");
       setTerms("");
       dispatch(fetchOffersForDeal(deal.id));

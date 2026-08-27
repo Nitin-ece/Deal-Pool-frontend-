@@ -34,10 +34,29 @@ import {
   Check,
   Coins,
   FileText,
+  Phone,
 } from "lucide-react";
 
 import { DEFAULT_CATEGORY_IMAGES } from "../lib/categoryImages";
 import { Offer } from "../types";
+
+const parseDescription = (desc: string | null | undefined) => {
+  if (!desc) return { text: "", phone: "" };
+  
+  const separator = "--- CONTACT INFO ---";
+  const index = desc.indexOf(separator);
+  if (index === -1) {
+    return { text: desc, phone: "" };
+  }
+  
+  const text = desc.substring(0, index).trim();
+  const contactPart = desc.substring(index + separator.length).trim();
+  
+  const phoneMatch = contactPart.match(/Phone:\s*(.*)/i);
+  const phone = phoneMatch ? phoneMatch[1].trim() : "";
+  
+  return { text, phone };
+};
 
 export function DealDetail() {
   const { id } = useParams<{ id: string }>();
@@ -100,6 +119,7 @@ export function DealDetail() {
   const isParticipant = isOwner || (userOffer && userOffer.status === "accepted") || (user && user.role === "admin");
 
   const imageUrl = currentDeal.image_url || DEFAULT_CATEGORY_IMAGES[currentDeal.category] || DEFAULT_CATEGORY_IMAGES["Other"];
+  const { text: cleanDescription, phone: contactPhone } = parseDescription(currentDeal.description);
 
   const handleAccept = (offerId: string) => {
     const targetOffer = offers.find((o) => o.id === offerId);
@@ -252,8 +272,19 @@ export function DealDetail() {
               Need Description & Specifications
             </h3>
             <p className="text-sm sm:text-base text-[var(--ink)] leading-relaxed whitespace-pre-line font-medium">
-              {currentDeal.description}
+              {cleanDescription}
             </p>
+            {contactPhone && (
+              <div className="mt-5 p-4 rounded-2xl border border-[var(--line)] bg-[var(--paper)] flex items-center gap-3 animate-in fade-in">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div className="text-xs space-y-0.5">
+                  <div className="font-bold text-sm text-[var(--ink)]">Contact Information</div>
+                  <div className="text-[var(--muted)]">Phone: <a href={`tel:${contactPhone}`} className="font-semibold text-[var(--ink)] hover:underline">{contactPhone}</a></div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Location Privacy Shield Indicator */}

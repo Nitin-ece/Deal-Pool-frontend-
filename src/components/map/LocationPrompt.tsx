@@ -45,7 +45,7 @@ export function LocationPrompt() {
               </span>
             </div>
             <p className="text-[11px] text-emerald-200/70 sm:text-xs">
-              Allow location access to automatically discover deals, equipment & skills near you.
+              Allow location access to automatically discover deals, equipment & services near you.
             </p>
           </div>
         </div>
