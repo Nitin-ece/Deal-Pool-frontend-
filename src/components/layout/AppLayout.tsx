@@ -17,10 +17,6 @@ export function AppLayout() {
     if (!initialized) checkAuth();
   }, [checkAuth, initialized]);
 
-  if (!initialized) {
-    return <LoadingScreen />;
-  }
-
   // Request browser location automatically on mount
   useEffect(() => {
     dispatch(requestUserLocation())
@@ -28,6 +24,10 @@ export function AppLayout() {
       .then((res) => dispatch(setUserLocation(res)))
       .catch(() => {});
   }, [dispatch]);
+
+  if (!initialized) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--paper)] text-[var(--ink)] antialiased transition-colors duration-200">

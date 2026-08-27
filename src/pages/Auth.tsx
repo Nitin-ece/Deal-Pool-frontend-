@@ -20,6 +20,7 @@ interface AuthProps {
 export function Auth({ initialMode = "login" }: AuthProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const appDispatch = useAppDispatch();
   const { user, login, register, googleAuth, isLoading, error, clearError, checkAuth, initialized } =
     useAuth();
 
@@ -74,8 +75,6 @@ export function Auth({ initialMode = "login" }: AuthProps) {
     }
     return getErrorMessage(err, "Authentication failed. Check your credentials.");
   };
-
-  const appDispatch = useAppDispatch();
 
   const triggerLocationPrompt = () => {
     appDispatch(requestUserLocation())
