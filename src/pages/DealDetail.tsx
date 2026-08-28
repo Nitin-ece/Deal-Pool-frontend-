@@ -113,7 +113,7 @@ export function DealDetail() {
     );
   }
 
-  const isOwner = user?.id === currentDeal.user_id;
+  const isOwner = !!user?.id && (user.id === currentDeal.user_id || user.id === currentDeal.creator?.id);
   const userOffer = offers.find((o) => o.provider_id === user?.id);
   const hasAcceptedOffer = offers.some((o) => o.status === "accepted");
   const isParticipant = isOwner || (userOffer && userOffer.status === "accepted") || (user && user.role === "admin");

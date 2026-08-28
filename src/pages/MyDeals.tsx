@@ -81,7 +81,7 @@ export function MyDeals() {
     fetchUserOffers();
   }, [dispatch, user]);
 
-  const userDeals = allDeals.filter((d) => d.user_id === user?.id);
+  const userDeals = allDeals.filter((d) => !!user?.id && (d.user_id === user.id || d.creator?.id === user.id));
 
   return (
     <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6 space-y-6">

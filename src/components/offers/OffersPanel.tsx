@@ -65,7 +65,7 @@ export function OffersPanel({ deal, isOpen, onClose }: OffersPanelProps) {
 
   if (!isOpen || !deal) return null;
 
-  const isOwner = user?.id === deal.user_id;
+  const isOwner = !!user?.id && (user.id === deal.user_id || user.id === deal.creator?.id);
   const userOffer = offers.find((o) => o.provider_id === user?.id);
 
   const handleSubmitOffer = async (e: React.FormEvent) => {
