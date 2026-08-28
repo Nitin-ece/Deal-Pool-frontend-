@@ -6,6 +6,7 @@ import offersReducer from "./slices/offersSlice";
 import locationReducer from "./slices/locationSlice";
 import mapReducer from "./slices/mapSlice";
 import walletReducer from "./slices/walletSlice";
+import contractsReducer from "./slices/contractsSlice";
 import { discoveryApi } from "./services/discoveryApi";
 
 export const store = configureStore({
@@ -16,6 +17,7 @@ export const store = configureStore({
     location: locationReducer,
     map: mapReducer,
     wallet: walletReducer,
+    contracts: contractsReducer,
     [discoveryApi.reducerPath]: discoveryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

@@ -10,6 +10,7 @@ export function BottomNav() {
   const items = [
     { name: "Radar", path: "/deals", icon: Compass },
     { name: "Post", path: "/deals/new", icon: PlusCircle },
+    { name: "Contracts", path: "/contracts", icon: FileText },
     { name: "Mine", path: "/my-deals", icon: FolderHeart },
     { name: "Settings", path: "/settings", icon: Settings },
   ];

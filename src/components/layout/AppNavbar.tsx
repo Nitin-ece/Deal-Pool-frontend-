@@ -85,6 +85,7 @@ export function AppNavbar() {
     { label: "Radar", href: "/deals", icon: Compass },
     { label: "Post Need", href: "/deals/new", icon: PlusCircle },
     { label: "My Deals", href: "/my-deals", icon: FolderHeart },
+    { label: "Contracts", href: "/contracts", icon: FileText },
     { label: "Settings", href: "/settings", icon: Settings },
   ];
 
@@ -299,6 +300,14 @@ export function AppNavbar() {
                       <span>My Listed Needs</span>
                     </Link>
                     <Link
+                      to="/contracts"
+                      onClick={closeAllMenus}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-[var(--ink)] transition hover:bg-[var(--line)]/40"
+                    >
+                      <FileText className="h-3.5 w-3.5 text-[var(--muted)]" />
+                      <span>My Contracts</span>
+                    </Link>
+                    <Link
                       to="/settings"
                       onClick={closeAllMenus}
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-[var(--ink)] transition hover:bg-[var(--line)]/40"
@@ -386,6 +395,8 @@ export function AppNavbar() {
                     location.pathname === "/create-deal")) ||
                 (item.href === "/my-deals" &&
                   location.pathname.startsWith("/my-deals")) ||
+                (item.href === "/contracts" &&
+                  location.pathname.startsWith("/contracts")) ||
                 (item.href === "/settings" &&
                   location.pathname.startsWith("/settings")) ||
                 (item.href === "/admin" &&

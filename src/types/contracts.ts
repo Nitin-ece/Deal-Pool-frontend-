@@ -22,6 +22,7 @@ export interface Contract {
   lend_fee: number;
   security_amount: number;
   platform_fee: number;
+  security_deposit_rate?: number;
   status: ContractStatus;
   requester_confirmed: boolean;
   provider_confirmed: boolean;
